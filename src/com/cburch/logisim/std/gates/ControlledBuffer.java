@@ -55,18 +55,11 @@ class ControlledBuffer extends InstanceFactory {
 					: Strings.getter("controlledBufferComponent"));
 		this.isInverter = isInverter;
 		if (isInverter) {
-			setAttributes(new Attribute[] { StdAttr.FACING, StdAttr.WIDTH,
-					NotGate.ATTR_SIZE, ATTR_CONTROL,
-					StdAttr.LABEL, StdAttr.LABEL_FONT },
-				new Object[] { Direction.EAST, BitWidth.ONE,
-					NotGate.SIZE_WIDE, RIGHT_HANDED,
-					"", StdAttr.DEFAULT_LABEL_FONT });
+			setAttributes(new Attribute[] { StdAttr.FACING, StdAttr.WIDTH, NotGate.ATTR_SIZE, ATTR_CONTROL },
+					new Object[] { Direction.EAST, BitWidth.ONE, NotGate.SIZE_WIDE, RIGHT_HANDED });
 		} else {
-			setAttributes(new Attribute[] {
-					StdAttr.FACING, StdAttr.WIDTH, ATTR_CONTROL,
-					StdAttr.LABEL, StdAttr.LABEL_FONT },
-				new Object[] { Direction.EAST, BitWidth.ONE, RIGHT_HANDED,
-					"", StdAttr.DEFAULT_LABEL_FONT });
+			setAttributes(new Attribute[] { StdAttr.FACING, StdAttr.WIDTH, ATTR_CONTROL },
+					new Object[] { Direction.EAST, BitWidth.ONE, RIGHT_HANDED });
 		}
 		setFacingAttribute(StdAttr.FACING);
 		setKeyConfigurator(new BitWidthConfigurator(StdAttr.WIDTH));
@@ -141,7 +134,6 @@ class ControlledBuffer extends InstanceFactory {
 			painter.drawPort(0);
 			painter.drawPort(1);
 		}
-		painter.drawLabel();
 	}
 	
 	private void paintShape(InstancePainter painter) {
@@ -181,7 +173,6 @@ class ControlledBuffer extends InstanceFactory {
 	protected void configureNewInstance(Instance instance) {
 		instance.addAttributeListener();
 		configurePorts(instance);
-		NotGate.configureLabel(instance, false, instance.getPortLocation(2));
 	}
 	
 	@Override
@@ -189,10 +180,8 @@ class ControlledBuffer extends InstanceFactory {
 		if (attr == StdAttr.FACING || attr == NotGate.ATTR_SIZE) {
 			instance.recomputeBounds();
 			configurePorts(instance);
-			NotGate.configureLabel(instance, false, instance.getPortLocation(2));
 		} else if (attr == ATTR_CONTROL) {
 			configurePorts(instance);
-			NotGate.configureLabel(instance, false, instance.getPortLocation(2));
 		}
 	}
 

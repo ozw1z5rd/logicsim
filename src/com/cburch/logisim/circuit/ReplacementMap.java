@@ -153,7 +153,7 @@ public class ReplacementMap {
 		return inverse.keySet();
 	}
 	
-	public void print(PrintStream out) {
+	void print(PrintStream out) {
 		boolean found = false;
 		for (Component c : getRemovals()) {
 			if (!found) out.println("  removals:");

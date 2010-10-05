@@ -15,8 +15,9 @@ class PrefMonitorString implements PreferenceChangeListener {
 	PrefMonitorString(String name, String dflt) {
 		this.name = name;
 		this.dflt = dflt;
+		this.value = dflt;
 		Preferences prefs = LogisimPreferences.getPrefs();
-		this.value = prefs.get(name, dflt);
+		set(prefs.get(name, dflt));
 		prefs.addPreferenceChangeListener(this);
 	}
 	

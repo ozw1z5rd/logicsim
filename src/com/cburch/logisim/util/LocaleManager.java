@@ -3,19 +3,61 @@
 
 package com.cburch.logisim.util;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
+import javax.swing.ButtonGroup;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 
 public class LocaleManager {
 	// static members
 	private static final String SETTINGS_NAME = "settings";
 	private static ArrayList<LocaleManager> managers = new ArrayList<LocaleManager>();
+
+	private static class LocaleItem extends JRadioButtonMenuItem
+			implements ActionListener {
+		private Locale locale;
+		LocaleItem(Locale locale, ButtonGroup bgroup) {
+			this.locale = locale;
+			bgroup.add(this);
+			addActionListener(this);
+			setSelected(locale.equals(LocaleManager.getLocale()));
+		}
+		public void actionPerformed(ActionEvent evt) {
+			if (isSelected()) LocaleManager.setLocale(locale);
+		}
+	}
+
+	private static class LocaleMenu extends JMenu
+			implements LocaleListener {
+		LocaleItem[] items;
+		LocaleMenu(Locale[] locales) {
+			ButtonGroup bgroup = new ButtonGroup();
+			items = new LocaleItem[locales.length];
+			for (int i = 0; i < locales.length; i++) {
+				items[i] = new LocaleItem(locales[i], bgroup);
+				add(items[i]);
+			}
+			LocaleManager.addLocaleListener(this);
+			localeChanged();
+		}
+		public void localeChanged() {
+			this.setText(Strings.get("localeMenuItem"));
+			Locale current = LocaleManager.getLocale();
+			for (int i = 0; i < items.length; i++) {
+				LocaleItem it = items[i];
+				it.setText(it.locale.getDisplayName(current));
+				it.setSelected(it.locale.equals(current));
+			}
+		}
+	}
 	
 	private static class LocaleGetter implements StringGetter {
 		private LocaleManager source;
@@ -37,48 +79,18 @@ public class LocaleManager {
 	private static ArrayList<LocaleListener> listeners = new ArrayList<LocaleListener>();
 	private static boolean replaceAccents = false; 
 	private static HashMap<Character,String> repl = null;
-	private static Locale curLocale = null;
 
 	public static Locale getLocale() {
-		Locale ret = curLocale;
-		if (ret == null) {
-			ret = Locale.getDefault();
-			curLocale = ret;
-		}
-		return ret;
+		return Locale.getDefault();
 	}
 
 	public static void setLocale(Locale loc) {
-		Locale cur = getLocale();
-		if (!loc.equals(cur)) {
-			Locale[] opts = Strings.getLocaleManager().getLocaleOptions();
-			Locale select = null;
-			Locale backup = null;
-			String locLang = loc.getLanguage();
-			for (Locale opt : opts) {
-				if (select == null && opt.equals(loc)) {
-					select = opt;
-				}
-				if (backup == null && opt.getLanguage().equals(locLang)) {
-					backup = opt;
-				}
-			}
-			if (select == null) {
-				if (backup == null) {
-					select = new Locale("en");
-				} else {
-					select = backup;
-				}
-			}
-			
-			curLocale = select;
-			Locale.setDefault(select);
-			for (LocaleManager man : managers) {
-				man.loadDefault();
-			}
-			repl = replaceAccents ? fetchReplaceAccents() : null;
-			fireLocaleChanged();
+		Locale.setDefault(loc);
+		for (LocaleManager man : managers) {
+			man.loadDefault();
 		}
+		repl = replaceAccents ? fetchReplaceAccents() : null;
+		fireLocaleChanged();
 	}
 	
 	public static boolean canReplaceAccents() {
@@ -236,15 +248,11 @@ public class LocaleManager {
 
 		return retl.toArray(new Locale[retl.size()]);
 	}
-	
-	public JComponent createLocaleSelector() {
+
+	public JMenuItem createLocaleMenuItem() {
 		Locale[] locales = getLocaleOptions();
-		if (locales == null || locales.length == 0) {
-			Locale cur = getLocale();
-			if (cur == null) cur = new Locale("en");
-			locales = new Locale[] { cur };
-		}
-		return new JScrollPane(new LocaleSelector(locales));
+		if (locales == null || locales.length == 0) return null;
+		else return new LocaleMenu(locales);
 	}
 	
 	private static String replaceAccents(String src, HashMap<Character,String> repl) {

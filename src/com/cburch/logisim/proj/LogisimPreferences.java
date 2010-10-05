@@ -15,7 +15,6 @@ import java.util.prefs.Preferences;
 
 import com.cburch.logisim.Main;
 import com.cburch.logisim.gui.start.Startup;
-import com.cburch.logisim.util.LocaleListener;
 import com.cburch.logisim.util.LocaleManager;
 import com.cburch.logisim.util.PropertyChangeWeakSupport;
 
@@ -77,12 +76,19 @@ public class LogisimPreferences {
 	//
 	// methods for accessing preferences
 	//
-	private static class MyListener implements PreferenceChangeListener,
-			LocaleListener {
+	private static class MyListener implements PreferenceChangeListener {
 		public void preferenceChange(PreferenceChangeEvent event) {
 			Preferences prefs = event.getNode();
 			String prop = event.getKey();
-			if (prop.equals(ACCENTS_REPLACE)) {
+			if (prop.equals(LOCALE_OPTION)) {
+				if (locale != null) {
+					String chosen = locale.get();
+					Locale found = findLocale(chosen);
+					if (found != null) {
+						LocaleManager.setLocale(found);
+					}
+				}
+			} else if (prop.equals(ACCENTS_REPLACE)) {
 				getPrefs();
 				LocaleManager.setReplaceAccents(accentsReplace.get());
 			} else if (prop.equals(TEMPLATE_TYPE)) {
@@ -106,12 +112,6 @@ public class LogisimPreferences {
 				}
 			}
 		}
-		
-		public void localeChanged() {
-			Locale loc = LocaleManager.getLocale();
-			String lang = loc.getLanguage();
-			locale.set(lang);
-		}
 	}
 	
 	static Preferences getPrefs() {
@@ -125,7 +125,9 @@ public class LogisimPreferences {
 
 					setTemplateFile(convertFile(p.get(TEMPLATE_FILE, null)));
 					setTemplateType(p.getInt(TEMPLATE_TYPE, TEMPLATE_PLAIN));
-					locale = new PrefMonitorString(LOCALE_OPTION, "");
+					Locale loc = Locale.getDefault();
+					String lang = loc == null ? "en" : loc.getLanguage();
+					locale = new PrefMonitorString(LOCALE_OPTION, lang);
 					accentsReplace = new PrefMonitorBoolean(ACCENTS_REPLACE, false);
 					stretchWires = new PrefMonitorBoolean(STRETCH_WIRES, false);
 					gateShape = new PrefMonitorStringOpts(GATE_SHAPE,
@@ -136,13 +138,9 @@ public class LogisimPreferences {
 							new String[] { AFTER_ADD_EDIT, AFTER_ADD_UNCHANGED });
 					showGhosts = new PrefMonitorBoolean(SHOW_GHOSTS, true);
 					showProjectToolbar = new PrefMonitorBoolean(SHOW_PROJECT_TOOLBAR, false);
-
-					String localeStr = locale.get();
-					if (localeStr != null && !localeStr.equals("")) {
-						LocaleManager.setLocale(new Locale(localeStr));
-					}
-					LocaleManager.addLocaleListener(myListener);
-					myListener.localeChanged();
+					
+					loc = findLocale(getLocale());
+					if (loc != null) LocaleManager.setLocale(loc);
 				}
 			}
 		}

@@ -224,8 +224,6 @@ public class InstancePainter implements InstanceState {
 	}
 	
 	public void drawLabel() {
-		if (comp != null) {
-			comp.drawLabel(context);
-		}
+		comp.drawLabel(context);
 	}
 }

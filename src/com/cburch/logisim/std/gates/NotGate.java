@@ -13,7 +13,6 @@ import javax.swing.Icon;
 import com.cburch.logisim.analyze.model.Expression;
 import com.cburch.logisim.analyze.model.Expressions;
 import com.cburch.logisim.circuit.ExpressionComputer;
-import com.cburch.logisim.comp.TextField;
 import com.cburch.logisim.data.Attribute;
 import com.cburch.logisim.data.AttributeOption;
 import com.cburch.logisim.data.AttributeSet;
@@ -55,11 +54,9 @@ class NotGate extends InstanceFactory {
 	private NotGate() {
 		super("NOT Gate", Strings.getter("notGateComponent"));
 		setAttributes(new Attribute[] {
-				StdAttr.FACING, StdAttr.WIDTH, ATTR_SIZE,
-				StdAttr.LABEL, StdAttr.LABEL_FONT,
+				StdAttr.FACING, StdAttr.WIDTH, ATTR_SIZE
 			}, new Object[] {
-				Direction.EAST, BitWidth.ONE, SIZE_WIDE,
-				"", StdAttr.DEFAULT_LABEL_FONT,
+				Direction.EAST, BitWidth.ONE, SIZE_WIDE
 			});
 		setFacingAttribute(StdAttr.FACING);
 		setKeyConfigurator(new BitWidthConfigurator(StdAttr.WIDTH));
@@ -98,8 +95,6 @@ class NotGate extends InstanceFactory {
 	protected void configureNewInstance(Instance instance) {
 		configurePorts(instance);
 		instance.addAttributeListener();
-		configureLabel(instance, LogisimPreferences.getGateShape()
-								== LogisimPreferences.SHAPE_RECTANGULAR, null);
 	}
 	
 	@Override
@@ -107,8 +102,6 @@ class NotGate extends InstanceFactory {
 		if (attr == ATTR_SIZE || attr == StdAttr.FACING) {
 			instance.recomputeBounds();
 			configurePorts(instance);
-			configureLabel(instance, LogisimPreferences.getGateShape()
-								== LogisimPreferences.SHAPE_RECTANGULAR, null);
 		}
 	}
 	
@@ -188,7 +181,6 @@ class NotGate extends InstanceFactory {
 		painter.getGraphics().setColor(Color.BLACK);
 		paintBase(painter);
 		painter.drawPorts();
-		painter.drawLabel();
 	}
 
 	private void paintBase(InstancePainter painter) {
@@ -234,29 +226,4 @@ class NotGate extends InstanceFactory {
 		GraphicsUtil.switchToWidth(g, 1);
 	}
 	
-	static void configureLabel(Instance instance, boolean isRectangular,
-			Location control) {
-		Object facing = instance.getAttributeValue(StdAttr.FACING);
-		Bounds bds = instance.getBounds();
-		int x;
-		int y;
-		int halign;
-		if (facing == Direction.NORTH || facing == Direction.SOUTH) {
-			x = bds.getX() + bds.getWidth() / 2 + 2;
-			y = bds.getY() - 2;
-			halign = TextField.H_LEFT;
-		} else { // west or east
-			y = isRectangular ? bds.getY() - 2 : bds.getY();
-			if (control != null && control.getY() == bds.getY()) {
-				// the control line will get in the way
-				x = control.getX() + 2;
-				halign = TextField.H_LEFT;
-			} else {
-				x = bds.getX() + bds.getWidth() / 2;
-				halign = TextField.H_CENTER;
-			}
-		}
-		instance.setTextField(StdAttr.LABEL, StdAttr.LABEL_FONT, x, y,
-				halign, TextField.V_BASELINE);
-	}
 }

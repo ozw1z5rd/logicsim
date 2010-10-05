@@ -2,10 +2,10 @@
 
 import os
 import platform
+import re
 import sys
 import shutil
 import time
-import copy_doc
 from logisim_script import *
 
 src_dir = get_svn_dir('src')
@@ -222,26 +222,21 @@ if include_source:
 	
 if include_documentation:
 	print('copying documentation')
-	doc_dst = build_path(temp_dir, 'doc')
-	copy_doc.do_copy(doc_dir, doc_dst)
+	copytree(doc_dir, build_path(temp_dir, 'doc'))
+	shutil.rmtree(build_path(temp_dir, 'doc/circs'))
 	
 	jhindexer = build_path(data_dir, 'javahelp/bin/jhindexer.jar', cygwin=False)
-	for locale in os.listdir(doc_dst):
-		locale_dst = build_path(doc_dst, locale)
-		if os.path.isdir(locale_dst):
-			os.chdir(locale_dst)
+	for locale in os.listdir(doc_dir):
+		locale_dir = build_path(temp_dir, 'doc', locale)
+		if os.path.isdir(locale_dir):
+			print('indexing documentation [' + locale + ']')
+			os.chdir(locale_dir)
 			cmd_args = [java_exec, '-jar', jhindexer]
 			if os.path.exists('jhindexer.cfg'):
 				cmd_args.extend(['-c', 'jhindexer.cfg'])
 			cmd_args.extend(['-locale', locale])
-			found = False
-			for sub in ['guide', 'libs']:
-				if os.path.exists(build_path(locale_dst, sub)):
-					cmd_args.append(sub)
-					found = True
-			if found:
-				print('indexing documentation [' + locale + ']')
-				system(*cmd_args)
+			cmd_args.extend(['guide', 'libs'])
+			system(*cmd_args)
 
 #
 # copy in the .class files that were compiled under MacOS

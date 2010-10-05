@@ -277,6 +277,7 @@ public class SelectionActions {
 		private int dy;
 		private ReplacementMap replacements;
 		private SelectionSave before;
+		// private SelectionSave after;
 		private CircuitTransaction xnReverse;
 		
 		Translate(Selection sel, int dx, int dy, ReplacementMap replacements) {
@@ -304,6 +305,7 @@ public class SelectionActions {
 
 			CircuitTransactionResult result = xn.execute();
 			xnReverse = result.getReverseTransaction();
+			// after = SelectionSave.create(sel);
 		}
 
 		@Override
@@ -318,6 +320,11 @@ public class SelectionActions {
 			else last = other;
 			
 			SelectionSave otherAfter = null;
+			/* I think this makes sense philosophically, but it feels weird...
+			if (last instanceof Translate) {
+				otherAfter = ((Translate) last).after;
+			}
+			*/
 			if (last instanceof Paste) {
 				otherAfter = ((Paste) last).after;
 			} else if (last instanceof Duplicate) {
