@@ -1,4 +1,6 @@
-# logicsim
+# Logi(c)sim
+
+Well actually the name is logisim ( no C ), however, logiCsim sounds much, much better.
 
 Imported from sourceforge ( https://sourceforge.net/projects/circuit/ ) 
 The author website: http://www.cburch.com/logisim/index.html
