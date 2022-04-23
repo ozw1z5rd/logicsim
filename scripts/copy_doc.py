@@ -21,7 +21,8 @@ def _get_png_dimension(png_path):
         start = 16 + i * 4
         dim = 0
         for j in range(4):
-            dim = 256 * dim + (header[start + j] & 0xFF)
+            value = int(header[start+j].encode('hex'),16)
+            dim = 256 * dim + (value & 0xFF)
         if i == 0:
             width = dim
         else:
@@ -144,17 +145,17 @@ def copy_files(locale, src_dir, dst_dir, translate_html=None,
                         shutil.copy(file_src, file_dst)
                 elif file.endswith('.html') or file.endswith('.jhm'):
                     try:
-                        with open(file_src, 'r', encoding='utf-8') as html_file:
+                        with open(file_src, 'r' ) as html_file:
                             html_text = html_file.read()
                         if html_text.strip() == '':
                         	file_src_en = build_path(en_src, base_rel, file)
-                        	with open(file_src_en, 'r', encoding='utf-8') as html_en_file:
+                        	with open(file_src_en, 'r') as html_en_file:
                         		html_text = html_en_file.read() 
                         html_text = img_re.sub(img_handler, html_text)
                         if translate_html is not None:
                             file_rel = file_rel.replace('\\', '/')
                             html_text = translate_html(html_text, file_rel)
-                        with open(file_dst, 'w', encoding='utf-8') as html_file:
+                        with open(file_dst, 'w') as html_file:
                             html_file.write(html_text)
                     except UnicodeDecodeError as e:
                         print('error copying ' + file_rel + ': ' + str(e))
@@ -176,7 +177,7 @@ def get_contents(locale, src_dir):
         contents_src = build_path(src_dir, loc, 'html/contents.html')
         ids = {}
         if os.path.exists(contents_src):
-            with open(contents_src, encoding='utf-8') as contents_file:
+            with open(contents_src,'r') as contents_file:
                 contents_text = contents_file.read()
             for contents_id in re_contents.finditer(contents_text):
                 id = contents_id.group(1)
@@ -206,7 +207,7 @@ def get_contents(locale, src_dir):
         return target_pre + target + target_post + text + tocitem_end
                 
     base_path = build_path(src_dir, 'support/base-contents.xml')
-    with open(base_path, encoding='utf-8') as base_file:
+    with open(base_path) as base_file:
         base_text = base_file.read()
     return re_tocitem.sub(tocitem_repl, base_text)
                     
@@ -242,7 +243,7 @@ def get_map(locale, src_dir):
         return url_pre + url + url_post
             
     base_map = build_path(src_dir, 'support/base-map.jhm')
-    with open(base_map, encoding='utf-8') as base_file:
+    with open(base_map) as base_file:
         base_text = base_file.read();
     return re_mapid.sub(mapid_repl, base_text)
 
@@ -251,7 +252,7 @@ def build_contents(src_dir, dst_dir):
         contents_dst = build_path(dst_dir, locale, 'contents.xml')
         if not os.path.exists(contents_dst):
             contents_text = get_contents(locale, src_dir)
-            with open(contents_dst, 'w', encoding='utf-8') as contents_file:
+            with open(contents_dst, 'w') as contents_file:
                 contents_file.write(contents_text)
 
 def build_map(src_dir, dst_dir):
@@ -259,12 +260,12 @@ def build_map(src_dir, dst_dir):
         map_dst = build_path(dst_dir, 'map_' + locale + '.jhm')
         if not os.path.exists(map_dst):
             map_text = get_map(locale, src_dir)
-            with open(map_dst, 'w', encoding='utf-8') as map_file:
+            with open(map_dst, 'w') as map_file:
                 map_file.write(map_text)
 
 def build_helpset(src_dir, dst_dir):
     base_helpset = build_path(src_dir, 'support/base-doc.hs')
-    with open(base_helpset, encoding='utf-8') as base_file:
+    with open(base_helpset) as base_file:
         base_text = base_file.read();
     
     re_lang = re.compile('{lang}')
@@ -272,6 +273,6 @@ def build_helpset(src_dir, dst_dir):
         helpset_dst = build_path(dst_dir, 'doc_' + locale + '.hs')
         if not os.path.exists(helpset_dst):
             helpset_text = re_lang.sub(locale, base_text)
-            with open(helpset_dst, 'w', encoding='utf-8') as helpset_file:
+            with open(helpset_dst, 'w') as helpset_file:
                 helpset_file.write(helpset_text)
                 

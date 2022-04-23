@@ -185,6 +185,7 @@ if bin_dir is None:
 				'-d', uncygwin(temp_dir), '-classpath', classpath,
 				'@' + uncygwin(java_files_path, verbose=True)]
 	before_compile = time.time()
+        print(javac_args)
 	exit_code = system(*javac_args)
 	elapse = format(time.time() - before_compile, '.1f')
 	print('   (' + elapse + 's elapsed during compile)')
